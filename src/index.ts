@@ -68,7 +68,8 @@ app.command('/jargon', async ({ command, ack, respond }) => {
                 '• `/jargon charge @user <word>` - Charge someone for using jargon\n' +
                 '• `/jargon add <word or phrase> <price>` - Add a new jargon word\n' +
                 '• `/jargon list` - Show all tracked words\n' +
-                '• `/jargon stats` - View your jargon statistics'
+                '• `/jargon stats` - View your jargon statistics\n' +
+                '• `/jargon seed` - Add default jargon words to workspace'
         });
         break;
       }
@@ -234,6 +235,21 @@ app.command('/jargon', async ({ command, ack, respond }) => {
 Total Charged: $${stats.totalCharged.toFixed(2)}
 Times Caught: ${stats.chargeCount}${mostUsedSection}`
         });
+        break;
+      }
+
+      case 'seed': {
+        // Add default words to the workspace
+        const result = await db.seedDefaultJargonWords(workspace.id);
+        if (result.success) {
+          await respond({
+            text: `${result.message}\nUse \`/jargon list\` to see all words.`
+          });
+        } else {
+          await respond({
+            text: `Error: ${result.error}`
+          });
+        }
         break;
       }
 
