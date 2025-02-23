@@ -61,7 +61,7 @@ app.command('/jargon', async ({ command, ack, respond }) => {
     switch (subcommand.toLowerCase()) {
       case 'help':
       case '': {
-        await respond({
+      await respond({
           text: 'Jargon Jar - Track corporate speak! 🏺\n\n' +
                 '*Available Commands:*\n' +
                 '• `/jargon help` - Show this help message\n' +
@@ -73,6 +73,7 @@ app.command('/jargon', async ({ command, ack, respond }) => {
                 '• `/jargon leaderboard` - View workspace statistics and rankings'
         });
         break;
+
       }
 
       case 'charge': {
@@ -269,7 +270,8 @@ Times Caught: ${stats.chargeCount}${mostUsedSection}`
         break;
       }
 
-      case 'leaderboard': {
+
+           case 'leaderboard': {
         const stats = await db.getWorkspaceStats(workspace.id);
         
         // Format leaderboard
@@ -306,6 +308,21 @@ Times Caught: ${stats.chargeCount}${mostUsedSection}`
             totalsText
           ].join('\n')
         });
+        break;
+      }
+
+      case 'seed': {
+        // Add default words to the workspace
+        const result = await db.seedDefaultJargonWords(workspace.id);
+        if (result.success) {
+          await respond({
+            text: `${result.message}\nUse \`/jargon list\` to see all words.`
+          });
+        } else {
+          await respond({
+            text: `Error: ${result.error}`
+          });
+        }
         break;
       }
 

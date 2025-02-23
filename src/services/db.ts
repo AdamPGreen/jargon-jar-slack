@@ -1,4 +1,5 @@
 import { PrismaClient, Prisma } from '@prisma/client';
+import { defaultJargonWords } from '../data/default-jargon';
 
 const prisma = new PrismaClient();
 
@@ -88,6 +89,48 @@ export class DatabaseService {
     }
   }
 
+  // Add default jargon words to a workspace
+  async seedDefaultJargonWords(workspaceId: string) {
+    try {
+      // Get existing words
+      const existingWords = await prisma.word.findMany({
+        where: { workspaceId },
+        select: { word: true }
+      });
+      const existingWordSet = new Set(existingWords.map(w => w.word));
+
+      // Filter out words that already exist
+      const wordsToAdd = defaultJargonWords.filter(word => 
+        !existingWordSet.has(word.word.toLowerCase())
+      );
+
+      if (wordsToAdd.length === 0) {
+        return { success: true, message: 'All default words already exist!' };
+      }
+
+      // Create new words in a transaction
+      await prisma.$transaction(
+        wordsToAdd.map(word => 
+          prisma.word.create({
+            data: {
+              workspaceId,
+              word: word.word.toLowerCase(),
+              price: word.price,
+              useCount: 0
+            }
+          })
+        )
+      );
+      return { 
+        success: true, 
+        message: `Added ${wordsToAdd.length} new default words!` 
+      };
+    } catch (error: unknown) {
+      console.error('Error seeding default jargon words:', error);
+      return { success: false, error: 'Failed to seed default words' };
+    }
+  }
+
   // Get or create workspace by Slack Team ID
   async getOrCreateWorkspace(slackTeamId: string, name: string) {
     const workspace = await prisma.workspace.upsert({
@@ -98,6 +141,16 @@ export class DatabaseService {
         name,
       },
     });
+
+    // If this is a new workspace, seed the default words
+    const existingWords = await prisma.word.findFirst({
+      where: { workspaceId: workspace.id }
+    });
+
+    if (!existingWords) {
+      await this.seedDefaultJargonWords(workspace.id);
+    }
+
     return workspace;
   }
 
