@@ -1,42 +1,51 @@
 import { App } from '@slack/bolt';
-import express from 'express';
 import dotenv from 'dotenv';
 
 // Load environment variables
 dotenv.config();
 
-// Initialize Express app
-const app = express();
-const port = process.env.PORT || 3000;
-
 // Initialize Slack app
-const slackApp = new App({
+const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
   socketMode: true,
-  appToken: process.env.SLACK_APP_TOKEN,
+  appToken: process.env.SLACK_APP_TOKEN
 });
 
-// Basic health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
+// Handle /jargon command
+app.command('/jargon', async ({ command, ack, respond }) => {
+  // Acknowledge command received
+  await ack();
+
+  const subcommand = command.text.split(' ')[0].toLowerCase();
+
+  switch (subcommand) {
+    case 'help':
+    case '':
+      await respond({
+        text: 'Jargon Jar - Track corporate speak! 🏺\n\n' +
+              '*Available Commands:*\n' +
+              '• `/jargon help` - Show this help message\n' +
+              '• `/jargon charge @user <word>` - Charge someone for using jargon\n' +
+              '• `/jargon add <word> <price>` - Add a new jargon word\n' +
+              '• `/jargon list` - Show all tracked words'
+      });
+      break;
+
+    default:
+      await respond({
+        text: 'Command not recognized. Try `/jargon help` to see available commands.'
+      });
+  }
 });
 
-// Start the server
-const startServer = async () => {
+// Start the app
+(async () => {
   try {
-    // Start the Slack app
-    await slackApp.start();
-    console.log('⚡️ Slack Bolt app is running!');
-
-    // Start Express server
-    app.listen(port, () => {
-      console.log(`⚡️ Express server is running at http://localhost:${port}`);
-    });
+    await app.start(process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 3000);
+    console.log('⚡️ Jargon Jar app is running!');
   } catch (error) {
-    console.error('Error starting server:', error);
+    console.error('Error starting app:', error);
     process.exit(1);
   }
-};
-
-startServer(); 
+})(); 
