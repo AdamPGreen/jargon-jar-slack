@@ -54,10 +54,18 @@
 - None currently tracked
 
 ## Next Planned Features
-1. Charge command implementation
+1. Enhance user mention handling in charge command
+   - Implement proper Slack user lookup
+   - Support all mention formats (display name, real name, email)
+   - Add user information caching
+   - Handle edge cases (deactivated users, workspace guests)
+2. Enhance error handling for charge command
+   - Add suggestion to create word when charging non-existent word
+   - Add interactive button to create new word directly from error message
+3. Charge command implementation
    - Parse @user mentions
    - Validate word exists
    - Create charge record
    - Update user totals
-2. Common jargon presets
-3. User leaderboard 
+4. Common jargon presets
+5. User leaderboard 
