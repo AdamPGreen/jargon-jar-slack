@@ -1,10 +1,10 @@
 # Development Process
 
 ## Session Start Checklist
-1. Current branch: [branch_name]
-2. Open PRs: [list_of_prs]
-3. Next planned task: [task_description]
-4. Last completed feature: [feature_description]
+1. Current branch: develop
+2. Open PRs: None
+3. Next planned task: Implement charge command
+4. Last completed feature: User tracking and statistics
 
 ## Branch Strategy
 - `main`: Production-ready code
@@ -37,9 +37,9 @@
    - Document any pending changes
 
 ## Current Status
-- Active Branch: main
+- Active Branch: develop
 - Latest Feature: User tracking and statistics
-- Next Task: Implement charge command
+- Next Task: Implement charge command (/jargon charge @user <word>)
 - Open PRs: None
 
 ## Recent Changes
@@ -47,11 +47,17 @@
 - Implemented /jargon stats
 - Added multi-word jargon support
 - Added list command
+- Set up develop branch
+- Added process documentation
 
 ## Known Issues
 - None currently tracked
 
 ## Next Planned Features
 1. Charge command implementation
+   - Parse @user mentions
+   - Validate word exists
+   - Create charge record
+   - Update user totals
 2. Common jargon presets
 3. User leaderboard 
