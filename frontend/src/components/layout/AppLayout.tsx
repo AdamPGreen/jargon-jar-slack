@@ -1,20 +1,14 @@
-import { Box, Flex, Link } from '@chakra-ui/react'
-import { Link as RouterLink, Outlet } from 'react-router-dom'
+import { Box, Container } from '@chakra-ui/react'
+import { Outlet } from 'react-router-dom'
+import Header from './Header'
 
 export default function AppLayout() {
   return (
-    <Box minH="100vh">
-      <Flex as="nav" bg="gray.100" p={4} gap={4}>
-        <Link as={RouterLink} to="/" fontWeight="bold">
-          Dashboard
-        </Link>
-        <Link as={RouterLink} to="/profile" fontWeight="bold">
-          Profile
-        </Link>
-      </Flex>
-      <Box as="main">
+    <Box minH="100vh" bg="gray.50">
+      <Header />
+      <Container as="main" maxW="container.xl" py={8}>
         <Outlet />
-      </Box>
+      </Container>
     </Box>
   )
 } 
