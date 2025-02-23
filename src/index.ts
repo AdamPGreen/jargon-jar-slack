@@ -68,7 +68,9 @@ app.command('/jargon', async ({ command, ack, respond }) => {
                 '• `/jargon charge @user <word>` - Charge someone for using jargon\n' +
                 '• `/jargon add <word or phrase> <price>` - Add a new jargon word\n' +
                 '• `/jargon list` - Show all tracked words\n' +
-                '• `/jargon stats` - View your jargon statistics'
+                '• `/jargon stats` - View your jargon statistics\n' +
+                '• `/jargon seed` - Add default jargon words to workspace\n' +
+                '• `/jargon leaderboard` - View workspace statistics and rankings'
         });
         break;
       }
@@ -106,35 +108,65 @@ app.command('/jargon', async ({ command, ack, respond }) => {
           return;
         }
 
-        // Get the word (could be multiple words)
-        const word = parts.slice(1).join(' ').toLowerCase();
-
-        // Get or create the target user
-        const targetUser = await db.getOrCreateUser(
-          workspace.id,
-          targetUserId,
-          targetUserId // We'll only have the ID at first
-        );
-
-        // Create the charge
-        const result = await db.createCharge(
-          workspace.id,
-          targetUser.id,
-          user.id,
-          word
-        );
-
-        if (result.success) {
-          const { word: jargonWord } = result;
-          const newTotal = Number(targetUser.totalCharged) + jargonWord.price;
-          await respond({
-            text: `💰 <@${targetUserId}> has been charged $${jargonWord.price.toFixed(2)} for using "${jargonWord.word}"\n` +
-                  `Their total is now $${newTotal.toFixed(2)}`
+        try {
+          // Try to get user info from Slack to verify they're in the channel
+          const result = await app.client.users.info({
+            user: targetUserId
           });
-        } else {
-          await respond({
-            text: `Error: ${result.error}`
-          });
+
+          if (!result.ok || !result.user) {
+            await respond({
+              text: 'Unable to verify user. They might not be in this workspace.'
+            });
+            return;
+          }
+
+          // Get the word (could be multiple words)
+          const word = parts.slice(1).join(' ').toLowerCase();
+
+          // Get or create the target user
+          const targetUser = await db.getOrCreateUser(
+            workspace.id,
+            targetUserId,
+            result.user.name || targetUserId // Use actual username from Slack
+          );
+
+          // Create the charge
+          const chargeResult = await db.createCharge(
+            workspace.id,
+            targetUser.id,
+            user.id,
+            word
+          );
+
+          if (chargeResult.success) {
+            const { word: jargonWord } = chargeResult;
+            const newTotal = Number(targetUser.totalCharged) + jargonWord.price;
+            await respond({
+              text: `💰 <@${targetUserId}> has been charged $${jargonWord.price.toFixed(2)} for using "${jargonWord.word}"\n` +
+                    `Their total is now $${newTotal.toFixed(2)}`
+            });
+          } else {
+            await respond({
+              text: `Error: ${chargeResult.error}`
+            });
+          }
+        } catch (error: unknown) {
+          console.error('Error in charge command:', error);
+          // Type guard for Slack API errors
+          if (typeof error === 'object' && error !== null && 'data' in error && 
+              typeof error.data === 'object' && error.data !== null && 
+              'error' in error.data && error.data.error === 'user_not_found') {
+            await respond({
+              text: 'This user is not in the current channel. You can:\n' +
+                   '• Invite them to the channel first\n' +
+                   '• Use this command in a channel where they are already a member'
+            });
+          } else {
+            await respond({
+              text: 'Sorry, something went wrong while processing the charge.'
+            });
+          }
         }
         break;
       }
@@ -233,6 +265,46 @@ app.command('/jargon', async ({ command, ack, respond }) => {
           text: `*Your Jargon Statistics* 📊
 Total Charged: $${stats.totalCharged.toFixed(2)}
 Times Caught: ${stats.chargeCount}${mostUsedSection}`
+        });
+        break;
+      }
+
+      case 'leaderboard': {
+        const stats = await db.getWorkspaceStats(workspace.id);
+        
+        // Format leaderboard
+        const leaderboardText = stats.leaderboard
+          .map((user, index) => 
+            `${index + 1}. <@${user.slackUserId}> - $${user.totalCharged.toFixed(2)} (${user.chargeCount} charges)`
+          )
+          .join('\n');
+
+        // Format top words
+        const topWordsText = stats.topWords
+          .map(word => 
+            `• *${word.word}* - ${word.useCount} uses ($${word.totalCollected.toFixed(2)})`
+          )
+          .join('\n');
+
+        // Format workspace totals
+        const totalsText = [
+          '*Workspace Totals:*',
+          `• Total Collected: $${stats.workspaceTotals.totalCollected.toFixed(2)}`,
+          `• Total Charges: ${stats.workspaceTotals.totalCharges}`,
+          `• Active Users: ${stats.workspaceTotals.uniqueUsers}`
+        ].join('\n');
+
+        await respond({
+          text: [
+            '*🏆 Jargon Jar Leaderboard*',
+            '',
+            leaderboardText,
+            '',
+            '*Most Used Words:*',
+            topWordsText,
+            '',
+            totalsText
+          ].join('\n')
         });
         break;
       }
