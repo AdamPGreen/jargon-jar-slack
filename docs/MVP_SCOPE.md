@@ -117,18 +117,75 @@ After MVP launch and validation, priority additions would be:
 
 ## Implementation Phases
 
-### Phase 1: Core Slack Integration
-- Basic slash commands
-- Simple word tracking
-- Basic charge system
+### Phase 1: Basic App Structure
+1. **Initial App Setup**
+   - ✅ Vite + React setup
+   - ✅ Basic folder structure
+   - ✅ Brand fonts and theme
 
-### Phase 2: Web Dashboard
-- Simple statistics view
-- Leaderboard
-- Basic user profiles
+2. **Core App Shell**
+   - Create basic App.tsx with minimal structure
+   - Add Chakra Provider
+   - Test that theme and fonts are working
+   - Commit this foundation
 
-### Phase 3: Polish & Launch
-- Testing & bug fixes
-- Performance optimization
-- Documentation
-- Launch preparation 
+3. **Basic Routing**
+   - Install React Router
+   - Set up basic routes for:
+     - Dashboard (main view)
+     - Profile
+   - Test navigation works
+   - Commit routing setup
+
+4. **Layout Foundation**
+   - Create basic layout component
+   - Add header with navigation
+   - Test responsive behavior
+   - Commit layout structure
+
+### Phase 2: Authentication
+1. **Slack OAuth Setup**
+   - Add login route
+   - Create OAuth redirect handler
+   - Test auth flow
+   - Commit auth foundation
+
+2. **Protected Routes**
+   - Add auth check
+   - Create loading states
+   - Handle unauthorized access
+   - Commit auth protection
+
+### Phase 3: Core Features
+1. **Dashboard View**
+   - Create dashboard layout
+   - Add placeholder stats sections
+   - Test responsive layout
+   - Commit dashboard structure
+
+2. **Profile View**
+   - Create profile layout
+   - Add user info section
+   - Add personal stats section
+   - Commit profile structure
+
+### Phase 4: Data Integration
+1. **API Integration**
+   - Set up API client
+   - Add basic data fetching
+   - Create loading states
+   - Commit API integration
+
+2. **Real-time Updates**
+   - Add WebSocket connection
+   - Handle live updates
+   - Test real-time flow
+   - Commit WebSocket setup
+
+Each implementation step follows these guidelines:
+1. Start with a new feature branch
+2. Focus on one small piece
+3. Be testable independently
+4. Include documentation updates
+5. End with a clean commit
+6. Be pushed to GitHub 
