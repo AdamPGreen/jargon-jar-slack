@@ -17,11 +17,12 @@ app.command('/jargon', async ({ command, ack, respond }) => {
   // Acknowledge command received
   await ack();
 
-  const subcommand = command.text.split(' ')[0].toLowerCase();
+  const args = command.text.split(' ');
+  const subcommand = args[0].toLowerCase();
 
   switch (subcommand) {
     case 'help':
-    case '':
+    case '': {
       await respond({
         text: 'Jargon Jar - Track corporate speak! 🏺\n\n' +
               '*Available Commands:*\n' +
@@ -31,11 +32,40 @@ app.command('/jargon', async ({ command, ack, respond }) => {
               '• `/jargon list` - Show all tracked words'
       });
       break;
+    }
 
-    default:
+    case 'add': {
+      // Check if we have both word and price
+      if (args.length !== 3) {
+        await respond({
+          text: 'Invalid format. Use: `/jargon add <word> <price>`\nExample: `/jargon add synergy 1.00`'
+        });
+        return;
+      }
+
+      const word = args[1].toLowerCase();
+      const price = Number.parseFloat(args[2]);
+
+      // Validate the price
+      if (Number.isNaN(price) || price <= 0) {
+        await respond({
+          text: 'Invalid price. Please provide a positive number.\nExample: `/jargon add synergy 1.00`'
+        });
+        return;
+      }
+
+      // For now, just acknowledge the valid format
+      await respond({
+        text: `Valid format! Will add "${word}" with price $${price.toFixed(2)} (database integration coming soon)`
+      });
+      break;
+    }
+
+    default: {
       await respond({
         text: 'Command not recognized. Try `/jargon help` to see available commands.'
       });
+    }
   }
 });
 
