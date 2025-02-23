@@ -1,14 +1,25 @@
-import { Box, Heading, Text } from '@chakra-ui/react'
+import { RouterProvider, createBrowserRouter } from 'react-router-dom'
+import AppLayout from './components/layout/AppLayout'
+import Dashboard from './pages/Dashboard'
+import Profile from './pages/Profile'
 
-function App() {
-  return (
-    <Box p={8}>
-      <Heading fontFamily="Druk Wide" color="brand.orange" mb={4}>
-        Jargon Jar
-      </Heading>
-      <Text>Welcome to your corporate rebellion dashboard.</Text>
-    </Box>
-  )
-}
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <AppLayout />,
+    children: [
+      {
+        index: true,
+        element: <Dashboard />,
+      },
+      {
+        path: 'profile',
+        element: <Profile />,
+      },
+    ],
+  },
+])
 
-export default App 
+export default function App() {
+  return <RouterProvider router={router} />
+} 
