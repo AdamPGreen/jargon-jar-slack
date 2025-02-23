@@ -16,72 +16,166 @@ const app = new App({
   appToken: process.env.SLACK_APP_TOKEN
 });
 
+// Parse Slack user ID from mention
+function parseUserId(mention: string, commandUserId: string): string | null {
+  console.log('Raw mention:', mention);
+  
+  // If it's a direct @mention format from Slack
+  const directMatch = mention.match(/^<@([UW][A-Z0-9]+)>$/);
+  if (directMatch) return directMatch[1];
+
+  // If it's a plain @ mention and matches the command user
+  const plainMention = mention.replace(/^@/, '');
+  console.log('Plain mention:', plainMention, 'Command user:', commandUserId);
+  
+  // For now, if someone mentions themselves, we'll use their ID
+  // Later we can add user lookup by username
+  if (plainMention === 'adam.p.green') {
+    return commandUserId;
+  }
+
+  return null;
+}
+
 // Handle /jargon command
 app.command('/jargon', async ({ command, ack, respond }) => {
   // Acknowledge command received
   await ack();
 
-  // Split only on the first space to get the subcommand
-  const [subcommand, ...restArgs] = command.text.split(/\s+(.+)/);
+  try {
+    // Get or create workspace and user for every command
+    const workspace = await db.getOrCreateWorkspace(
+      command.team_id,
+      command.team_domain
+    );
 
-  switch (subcommand.toLowerCase()) {
-    case 'help':
-    case '': {
-      await respond({
-        text: 'Jargon Jar - Track corporate speak! 🏺\n\n' +
-              '*Available Commands:*\n' +
-              '• `/jargon help` - Show this help message\n' +
-              '• `/jargon charge @user <word>` - Charge someone for using jargon\n' +
-              '• `/jargon add <word or phrase> <price>` - Add a new jargon word\n' +
-              '• `/jargon list` - Show all tracked words'
-      });
-      break;
-    }
+    const user = await db.getOrCreateUser(
+      workspace.id,
+      command.user_id,
+      command.user_name
+    );
 
-    case 'add': {
-      if (!restArgs.length) {
+    // Split only on the first space to get the subcommand
+    const [subcommand, ...restArgs] = command.text.split(/\s+(.+)/);
+
+    switch (subcommand.toLowerCase()) {
+      case 'help':
+      case '': {
         await respond({
-          text: 'Invalid format. Use: `/jargon add <word or phrase> <price>`\nExample: `/jargon add double click 1.00` or `/jargon add synergy 1.00`'
+          text: 'Jargon Jar - Track corporate speak! 🏺\n\n' +
+                '*Available Commands:*\n' +
+                '• `/jargon help` - Show this help message\n' +
+                '• `/jargon charge @user <word>` - Charge someone for using jargon\n' +
+                '• `/jargon add <word or phrase> <price>` - Add a new jargon word\n' +
+                '• `/jargon list` - Show all tracked words\n' +
+                '• `/jargon stats` - View your jargon statistics'
         });
-        return;
+        break;
       }
 
-      // Get the remaining text and split from the right to get the price
-      const fullText = restArgs[0];
-      const lastSpaceIndex = fullText.lastIndexOf(' ');
-      
-      if (lastSpaceIndex === -1) {
-        await respond({
-          text: 'Invalid format. Use: `/jargon add <word or phrase> <price>`\nExample: `/jargon add double click 1.00` or `/jargon add synergy 1.00`'
-        });
-        return;
-      }
+      case 'charge': {
+        if (!restArgs.length) {
+          await respond({
+            text: 'Invalid format. Use: `/jargon charge @user <word>`\nExample: `/jargon charge @john synergy`'
+          });
+          return;
+        }
 
-      const word = fullText.substring(0, lastSpaceIndex).toLowerCase();
-      const price = Number.parseFloat(fullText.substring(lastSpaceIndex + 1));
+        console.log('Full command:', command);
+        console.log('Rest args:', restArgs);
+        
+        const parts = restArgs[0].trim().split(/\s+/);
+        console.log('Parts:', parts);
+        
+        // Need at least @user and word
+        if (parts.length < 2) {
+          await respond({
+            text: 'Invalid format. Use: `/jargon charge @user <word>`\nExample: `/jargon charge @john synergy`'
+          });
+          return;
+        }
 
-      // Validate the word
-      if (word.length === 0) {
-        await respond({
-          text: 'Please provide a word or phrase to add.'
-        });
-        return;
-      }
+        // Parse user mention
+        console.log('Attempting to parse user from:', parts[0]);
+        const targetUserId = parseUserId(parts[0], command.user_id);
+        console.log('Parsed user ID:', targetUserId);
+        if (!targetUserId) {
+          await respond({
+            text: 'Invalid user mention. Make sure to @mention the user.'
+          });
+          return;
+        }
 
-      // Validate the price
-      if (Number.isNaN(price) || price <= 0) {
-        await respond({
-          text: 'Invalid price. Please provide a positive number.\nExample: `/jargon add double click 1.00`'
-        });
-        return;
-      }
+        // Get the word (could be multiple words)
+        const word = parts.slice(1).join(' ').toLowerCase();
 
-      try {
-        // Get or create workspace
-        const workspace = await db.getOrCreateWorkspace(
-          command.team_id,
-          command.team_domain
+        // Get or create the target user
+        const targetUser = await db.getOrCreateUser(
+          workspace.id,
+          targetUserId,
+          targetUserId // We'll only have the ID at first
         );
+
+        // Create the charge
+        const result = await db.createCharge(
+          workspace.id,
+          targetUser.id,
+          user.id,
+          word
+        );
+
+        if (result.success) {
+          const { word: jargonWord } = result;
+          const newTotal = Number(targetUser.totalCharged) + jargonWord.price;
+          await respond({
+            text: `💰 <@${targetUserId}> has been charged $${jargonWord.price.toFixed(2)} for using "${jargonWord.word}"\n` +
+                  `Their total is now $${newTotal.toFixed(2)}`
+          });
+        } else {
+          await respond({
+            text: `Error: ${result.error}`
+          });
+        }
+        break;
+      }
+
+      case 'add': {
+        if (!restArgs.length) {
+          await respond({
+            text: 'Invalid format. Use: `/jargon add <word or phrase> <price>`\nExample: `/jargon add double click 1.00` or `/jargon add synergy 1.00`'
+          });
+          return;
+        }
+
+        // Get the remaining text and split from the right to get the price
+        const fullText = restArgs[0];
+        const lastSpaceIndex = fullText.lastIndexOf(' ');
+        
+        if (lastSpaceIndex === -1) {
+          await respond({
+            text: 'Invalid format. Use: `/jargon add <word or phrase> <price>`\nExample: `/jargon add double click 1.00` or `/jargon add synergy 1.00`'
+          });
+          return;
+        }
+
+        const word = fullText.substring(0, lastSpaceIndex).toLowerCase();
+        const price = Number.parseFloat(fullText.substring(lastSpaceIndex + 1));
+
+        // Validate the word
+        if (word.length === 0) {
+          await respond({
+            text: 'Please provide a word or phrase to add.'
+          });
+          return;
+        }
+
+        // Validate the price
+        if (Number.isNaN(price) || price <= 0) {
+          await respond({
+            text: 'Invalid price. Please provide a positive number.\nExample: `/jargon add double click 1.00`'
+          });
+          return;
+        }
 
         // Add the word
         const result = await db.addWord(workspace.id, word, price);
@@ -95,23 +189,10 @@ app.command('/jargon', async ({ command, ack, respond }) => {
             text: `Error: ${result.error}`
           });
         }
-      } catch (error) {
-        console.error('Error adding word:', error);
-        await respond({
-          text: 'Sorry, something went wrong while adding the word. Please try again.'
-        });
+        break;
       }
-      break;
-    }
 
-    case 'list': {
-      try {
-        // Get workspace
-        const workspace = await db.getOrCreateWorkspace(
-          command.team_id,
-          command.team_domain
-        );
-
+      case 'list': {
         // Get all words
         const words = await db.listWords(workspace.id);
 
@@ -130,20 +211,43 @@ app.command('/jargon', async ({ command, ack, respond }) => {
         await respond({
           text: `*Tracked Jargon Words:*\n${wordList}`
         });
-      } catch (error) {
-        console.error('Error listing words:', error);
+        break;
+      }
+
+      case 'stats': {
+        const stats = await db.getUserStats(command.user_id);
+        if (!stats) {
+          await respond({
+            text: 'No statistics available yet. Start using jargon to see your stats!'
+          });
+          return;
+        }
+
+        const mostUsedSection = stats.mostUsedWords.length > 0
+          ? `\n\n*Your Most Used Words:*\n${stats.mostUsedWords
+              .map(w => `• *${w.word}* - ${w.count} times ($${w.totalAmount.toFixed(2)})`)
+              .join('\n')}`
+          : '';
+
         await respond({
-          text: 'Sorry, something went wrong while fetching the word list. Please try again.'
+          text: `*Your Jargon Statistics* 📊
+Total Charged: $${stats.totalCharged.toFixed(2)}
+Times Caught: ${stats.chargeCount}${mostUsedSection}`
+        });
+        break;
+      }
+
+      default: {
+        await respond({
+          text: 'Command not recognized. Try `/jargon help` to see available commands.'
         });
       }
-      break;
     }
-
-    default: {
-      await respond({
-        text: 'Command not recognized. Try `/jargon help` to see available commands.'
-      });
-    }
+  } catch (error) {
+    console.error('Error processing command:', error);
+    await respond({
+      text: 'Sorry, something went wrong while processing your command. Please try again.'
+    });
   }
 });
 
