@@ -62,39 +62,73 @@ For new development sessions:
 ## Latest Session (2024-03-19)
 
 ### Completed
-- ✅ Implemented database service layer for word management
-- ✅ Integrated `/jargon add` command with database
-- ✅ Added input validation for word addition
-- ✅ Added duplicate word checking
-- ✅ Implemented `/jargon list` command
-- ✅ Added support for multi-word jargon phrases
-- ✅ Tested all word addition and listing scenarios successfully
+- ✅ Decided on web app technology stack and architecture
+- ✅ Created comprehensive web app strategy documentation
+- ✅ Updated MVP scope with detailed web dashboard requirements
+- ✅ Cleaned up project from previous EJS implementation attempt
+- ✅ Documented implementation phases and success metrics
+- ✅ Created brand and design guidelines
+- ✅ Set up Chakra UI with brand theme
+- ✅ Added brand font (Druk Wide Bold)
 
 ### Current Status
-- Basic Slack app is running with socket mode
-- Help command is working
-- Word addition is fully functional with database integration
-- Multi-word phrases are supported
-- Word listing shows prices and usage counts
-- Database service layer is ready for expansion
+- Web app strategy documented in `WEB_APP_STRATEGY.md`
+- MVP scope updated with SPA requirements
+- Project cleaned and ready for React implementation
+- All core Slack commands are working
+- Database service layer is stable
+- Brand identity and design system established
+- Basic frontend configuration complete with:
+  - Chakra UI for components
+  - Brand colors and typography defined
+  - Custom font integration
 
 ### Next Steps
-1. Implement user tracking for the charge command
-2. Add the charge command functionality
-3. Consider adding common jargon presets
+1. Implement basic layout components
+   - Create app shell/container
+   - Build navigation
+   - Set up page templates
+
+2. Set up authentication flow
+   - Slack OAuth integration
+   - Session management
+   - Protected routes
+
+3. Create core layouts and components
+   - Basic routing structure
+   - Shared components
+   - Layout templates
 
 ### Key Decisions
-- Using Prisma Client for database operations
-- Implementing proper error handling for duplicate words
-- Adding price validation to prevent negative values
-- Using workspace-specific word tracking
-- Supporting multi-word phrases by parsing from the right side
-- Sorting word list by usage count and then alphabetically
+- Chose React for frontend framework
+  - Better TypeScript support
+  - Rich ecosystem for required features
+  - Strong performance for real-time updates
+- Selected Vite as build tool
+- Planned monorepo structure
+- Decided on key libraries for various features
 
 ### Technical Notes
-- Command parsing improved to handle phrases with spaces
-- Price is always the last argument in the add command
-- Words are stored in lowercase for case-insensitive matching
-- List command shows usage statistics when available
+- Will use WebSocket for real-time updates
+- Shared types between frontend and backend
+- JWT-based authentication
+- Component-based architecture
 
-### 2024-03-19
+## Next Session Prompt
+To start the next session, use this context:
+
+"Previous work on the Jargon Jar project established a fully functional Slack bot with commands for tracking jargon usage, user statistics, and workspace leaderboards. The backend uses Express, TypeScript, and PostgreSQL with Prisma ORM.
+
+We're now starting the web dashboard implementation. Key documents to reference:
+- `WEB_APP_STRATEGY.md`: Complete technical strategy
+- `MVP_SCOPE.md`: Updated requirements
+- `UPDATES.md`: Latest progress
+
+Next task is to:
+1. Set up the React SPA project using Vite
+2. Configure it to work alongside our existing Express backend
+3. Begin implementing the foundation phase
+
+The project uses TypeScript throughout, and we want to maintain consistent code quality and type safety between frontend and backend.
+
+Current project structure and all documentation are in place. Ready to begin the web app implementation following the documented strategy."
