@@ -261,4 +261,63 @@ export class DatabaseService {
     });
     return words;
   }
+
+  // Get workspace statistics
+  async getWorkspaceStats(workspaceId: string) {
+    // Get all users in workspace with their total charges
+    const users = await prisma.user.findMany({
+      where: { workspaceId },
+      select: {
+        name: true,
+        slackUserId: true,
+        totalCharged: true,
+        charges: {
+          select: {
+            amount: true
+          }
+        }
+      },
+      orderBy: {
+        totalCharged: 'desc'
+      }
+    });
+
+    // Get top words in workspace
+    const words = await prisma.word.findMany({
+      where: { workspaceId },
+      select: {
+        word: true,
+        price: true,
+        useCount: true
+      },
+      orderBy: {
+        useCount: 'desc'
+      },
+      take: 5
+    });
+
+    // Calculate workspace totals
+    const totalCollected = users.reduce((sum, user) => sum + Number(user.totalCharged), 0);
+    const totalCharges = users.reduce((sum, user) => sum + user.charges.length, 0);
+
+    return {
+      leaderboard: users.map(user => ({
+        name: user.name,
+        slackUserId: user.slackUserId,
+        totalCharged: Number(user.totalCharged),
+        chargeCount: user.charges.length
+      })),
+      topWords: words.map(word => ({
+        word: word.word,
+        useCount: word.useCount,
+        totalCollected: Number(word.price) * word.useCount
+      })),
+      workspaceTotals: {
+        totalCollected,
+        totalCharges,
+        uniqueUsers: users.length,
+        trackedWords: words.length
+      }
+    };
+  }
 } 
