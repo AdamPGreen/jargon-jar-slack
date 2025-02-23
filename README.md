@@ -99,4 +99,19 @@ This project is configured for deployment on Railway. The deployment process is 
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Project Structure
+
+```
+jargon-jar-v2/
+├── src/           # Backend (Express + TypeScript)
+├── frontend/      # Frontend (React + Vite)
+├── docs/          # Project documentation
+└── prisma/        # Database schema and migrations
+```
+
+The project follows a monorepo structure:
+- `src/`: Contains the Express backend, Slack bot integration, and database logic
+- `frontend/`: Contains the React-based web dashboard
+- `docs/`: Project documentation, including brand guidelines and development updates 
