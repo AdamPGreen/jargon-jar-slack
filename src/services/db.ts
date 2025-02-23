@@ -48,4 +48,16 @@ export class DatabaseService {
     });
     return !!existingWord;
   }
+
+  // Get all words for a workspace
+  async listWords(workspaceId: string) {
+    const words = await prisma.word.findMany({
+      where: { workspaceId },
+      orderBy: [
+        { useCount: 'desc' },
+        { word: 'asc' }
+      ]
+    });
+    return words;
+  }
 } 

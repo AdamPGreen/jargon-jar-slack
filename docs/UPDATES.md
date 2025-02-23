@@ -66,23 +66,35 @@ For new development sessions:
 - ✅ Integrated `/jargon add` command with database
 - ✅ Added input validation for word addition
 - ✅ Added duplicate word checking
-- ✅ Tested all word addition scenarios successfully
+- ✅ Implemented `/jargon list` command
+- ✅ Added support for multi-word jargon phrases
+- ✅ Tested all word addition and listing scenarios successfully
 
 ### Current Status
 - Basic Slack app is running with socket mode
 - Help command is working
 - Word addition is fully functional with database integration
+- Multi-word phrases are supported
+- Word listing shows prices and usage counts
 - Database service layer is ready for expansion
 
 ### Next Steps
-1. Implement `/jargon list` command to view tracked words
-2. Implement user tracking for the charge command
-3. Add the charge command functionality
+1. Implement user tracking for the charge command
+2. Add the charge command functionality
+3. Consider adding common jargon presets
 
 ### Key Decisions
 - Using Prisma Client for database operations
 - Implementing proper error handling for duplicate words
 - Adding price validation to prevent negative values
 - Using workspace-specific word tracking
+- Supporting multi-word phrases by parsing from the right side
+- Sorting word list by usage count and then alphabetically
+
+### Technical Notes
+- Command parsing improved to handle phrases with spaces
+- Price is always the last argument in the add command
+- Words are stored in lowercase for case-insensitive matching
+- List command shows usage statistics when available
 
 ### 2024-03-19

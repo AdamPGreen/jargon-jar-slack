@@ -9,20 +9,19 @@ The Minimum Viable Product (MVP) for Jargon Jar will focus on delivering the cor
 - **Manual Reporting Only** (Phase 1)
   - ✅ `/jargon help` - View available commands
   - `/jargon charge @user <word>` - Basic charge command
-  - ✅ `/jargon add <word> <price>` - Add new word (fully implemented with database)
-  - `/jargon list` - View all tracked words
+  - ✅ `/jargon add <word or phrase> <price>` - Add new word (fully implemented with database)
+  - ✅ `/jargon list` - View all tracked words
 
 ### 2. Jar Management (Essential)
 - ✅ One jar per Slack workspace
 - Pre-loaded list of common jargon words with fixed prices
 - Basic word management:
-  - ✅ `/jargon add <word> <price>` - Command structure ready
-  - Input validation implemented:
-    - ✅ Proper command format
-    - ✅ Valid price (positive number)
+  - ✅ `/jargon add` command features:
+    - ✅ Multi-word phrase support
+    - ✅ Price validation
+    - ✅ Duplicate checking
     - ✅ Database integration
-    - ✅ Duplicate word checking
-  - `/jargon list` - Coming soon
+  - ✅ `/jargon list` - View all words with prices and usage counts
 
 ### 3. User Management (Essential)
 - Automatic user inclusion based on Slack workspace
