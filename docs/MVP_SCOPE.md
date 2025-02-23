@@ -32,20 +32,28 @@ The Minimum Viable Product (MVP) for Jargon Jar will focus on delivering the cor
 
 ### 4. Basic Statistics (Essential)
 - **User Level**
-  - Total amount charged
-  - Most used words
+  - ✅ Total amount charged
+  - ✅ Most used words
 - **Workspace Level**
-  - Simple leaderboard
+  - ✅ Simple leaderboard
   - Basic command:
-    - `/jargon stats` - View personal or workspace stats
+    - ✅ `/jargon stats` - View personal or workspace stats
+    - ✅ `/jargon leaderboard` - View workspace rankings
 
 ### 5. Simple Web Dashboard
-- View-only interface
-- Basic authentication via Slack
+- React-based SPA with TypeScript
+- Authentication:
+  - Slack OAuth integration
+  - Secure session management
 - Core views:
-  - Workspace leaderboard
-  - Personal statistics
-  - Word list
+  - Workspace leaderboard with real-time updates
+  - Personal statistics with charts
+  - Word list with management features
+- Basic features:
+  - Responsive design
+  - Real-time updates via WebSocket
+  - Interactive charts for statistics
+  - Basic caching for performance
 
 ## Technical MVP Scope
 
