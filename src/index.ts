@@ -1,8 +1,12 @@
 import { App } from '@slack/bolt';
 import dotenv from 'dotenv';
+import { DatabaseService } from './services/db';
 
 // Load environment variables
 dotenv.config();
+
+// Initialize services
+const db = new DatabaseService();
 
 // Initialize Slack app
 const app = new App({
@@ -54,10 +58,31 @@ app.command('/jargon', async ({ command, ack, respond }) => {
         return;
       }
 
-      // For now, just acknowledge the valid format
-      await respond({
-        text: `Valid format! Will add "${word}" with price $${price.toFixed(2)} (database integration coming soon)`
-      });
+      try {
+        // Get or create workspace
+        const workspace = await db.getOrCreateWorkspace(
+          command.team_id,
+          command.team_domain
+        );
+
+        // Add the word
+        const result = await db.addWord(workspace.id, word, price);
+
+        if (result.success) {
+          await respond({
+            text: `Added "${word}" to the jargon jar! 🏺\nPrice: $${price.toFixed(2)}`
+          });
+        } else {
+          await respond({
+            text: `Error: ${result.error}`
+          });
+        }
+      } catch (error) {
+        console.error('Error adding word:', error);
+        await respond({
+          text: 'Sorry, something went wrong while adding the word. Please try again.'
+        });
+      }
       break;
     }
 
