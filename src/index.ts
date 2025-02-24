@@ -1,9 +1,12 @@
 import { App } from '@slack/bolt';
 import dotenv from 'dotenv';
 import { DatabaseService } from './services/db';
+import webApp from './app';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables from .env file in development only
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
 // Initialize services
 const db = new DatabaseService();
@@ -61,7 +64,7 @@ app.command('/jargon', async ({ command, ack, respond }) => {
     switch (subcommand.toLowerCase()) {
       case 'help':
       case '': {
-        await respond({
+      await respond({
           text: 'Jargon Jar - Track corporate speak! 🏺\n\n' +
                 '*Available Commands:*\n' +
                 '• `/jargon help` - Show this help message\n' +
@@ -73,6 +76,7 @@ app.command('/jargon', async ({ command, ack, respond }) => {
                 '• `/jargon leaderboard` - View workspace statistics and rankings'
         });
         break;
+
       }
 
       case 'charge': {
@@ -269,7 +273,8 @@ Times Caught: ${stats.chargeCount}${mostUsedSection}`
         break;
       }
 
-      case 'leaderboard': {
+
+           case 'leaderboard': {
         const stats = await db.getWorkspaceStats(workspace.id);
         
         // Format leaderboard
@@ -309,6 +314,21 @@ Times Caught: ${stats.chargeCount}${mostUsedSection}`
         break;
       }
 
+      case 'seed': {
+        // Add default words to the workspace
+        const result = await db.seedDefaultJargonWords(workspace.id);
+        if (result.success) {
+          await respond({
+            text: `${result.message}\nUse \`/jargon list\` to see all words.`
+          });
+        } else {
+          await respond({
+            text: `Error: ${result.error}`
+          });
+        }
+        break;
+      }
+
       default: {
         await respond({
           text: 'Command not recognized. Try `/jargon help` to see available commands.'
@@ -323,13 +343,15 @@ Times Caught: ${stats.chargeCount}${mostUsedSection}`
   }
 });
 
-// Start the app
+// Start both apps
 (async () => {
-  try {
-    await app.start(process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 3000);
-    console.log('⚡️ Jargon Jar app is running!');
-  } catch (error) {
-    console.error('Error starting app:', error);
-    process.exit(1);
-  }
+  // Start the Slack app
+  await app.start();
+  console.log('⚡️ Slack bot is running!');
+
+  // Start the web server
+  const PORT = process.env.PORT || 3000;
+  webApp.listen(PORT, () => {
+    console.log(`🚀 Web server running on port ${PORT}`);
+  });
 })(); 

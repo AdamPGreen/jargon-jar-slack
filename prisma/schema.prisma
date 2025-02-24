@@ -21,6 +21,7 @@ model Workspace {
   users       User[]
   words       Word[]
   charges     Charge[]
+  sessions    Session[]
 }
 
 model User {
@@ -35,6 +36,7 @@ model User {
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
   charges     Charge[] @relation("ChargedUser")
   reports     Charge[] @relation("Reporter")
+  sessions    Session[]
 }
 
 model Word {
@@ -67,4 +69,17 @@ model Charge {
   user        User     @relation("ChargedUser", fields: [userId], references: [id])
   reporter    User     @relation("Reporter", fields: [reporterId], references: [id])
   word        Word     @relation(fields: [wordId], references: [id])
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  userId      String
+  workspaceId String
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@index([userId])
+  @@index([workspaceId])
 } 

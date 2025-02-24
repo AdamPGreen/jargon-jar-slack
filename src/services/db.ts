@@ -1,6 +1,31 @@
 import { PrismaClient, Prisma } from '@prisma/client';
+import type { Charge, Word } from '@prisma/client';
+import { defaultJargonWords } from '../data/default-jargon';
 
 const prisma = new PrismaClient();
+
+interface CreateSessionParams {
+  userId: string;
+  workspaceId: string;
+  expiresAt: Date;
+}
+
+interface ChargeResult {
+  success: true;
+  charge: Charge;
+  word: {
+    id: string;
+    word: string;
+    price: number;
+  };
+}
+
+interface ChargeError {
+  success: false;
+  error: string;
+}
+
+type ChargeResponse = ChargeResult | ChargeError;
 
 export class DatabaseService {
   // Add a new jargon word to a workspace
@@ -24,10 +49,7 @@ export class DatabaseService {
   }
 
   // Create a charge for using jargon
-  async createCharge(workspaceId: string, userId: string, reporterId: string, word: string): Promise<
-    | { success: true; charge: any; word: { word: string; price: number; id: string } }
-    | { success: false; error: string }
-  > {
+  async createCharge(workspaceId: string, userId: string, reporterId: string, word: string): Promise<ChargeResponse> {
     try {
       // Find the word and get its price
       const jargonWord = await prisma.word.findUnique({
@@ -88,6 +110,48 @@ export class DatabaseService {
     }
   }
 
+  // Add default jargon words to a workspace
+  async seedDefaultJargonWords(workspaceId: string) {
+    try {
+      // Get existing words
+      const existingWords = await prisma.word.findMany({
+        where: { workspaceId },
+        select: { word: true }
+      });
+      const existingWordSet = new Set(existingWords.map(w => w.word));
+
+      // Filter out words that already exist
+      const wordsToAdd = defaultJargonWords.filter(word => 
+        !existingWordSet.has(word.word.toLowerCase())
+      );
+
+      if (wordsToAdd.length === 0) {
+        return { success: true, message: 'All default words already exist!' };
+      }
+
+      // Create new words in a transaction
+      await prisma.$transaction(
+        wordsToAdd.map(word => 
+          prisma.word.create({
+            data: {
+              workspaceId,
+              word: word.word.toLowerCase(),
+              price: word.price,
+              useCount: 0
+            }
+          })
+        )
+      );
+      return { 
+        success: true, 
+        message: `Added ${wordsToAdd.length} new default words!` 
+      };
+    } catch (error: unknown) {
+      console.error('Error seeding default jargon words:', error);
+      return { success: false, error: 'Failed to seed default words' };
+    }
+  }
+
   // Get or create workspace by Slack Team ID
   async getOrCreateWorkspace(slackTeamId: string, name: string) {
     const workspace = await prisma.workspace.upsert({
@@ -98,6 +162,16 @@ export class DatabaseService {
         name,
       },
     });
+
+    // If this is a new workspace, seed the default words
+    const existingWords = await prisma.word.findFirst({
+      where: { workspaceId: workspace.id }
+    });
+
+    if (!existingWords) {
+      await this.seedDefaultJargonWords(workspace.id);
+    }
+
     return workspace;
   }
 
@@ -266,5 +340,25 @@ export class DatabaseService {
         trackedWords: words.length
       }
     };
+  }
+
+  async createSession(params: CreateSessionParams) {
+    return prisma.session.create({
+      data: {
+        userId: params.userId,
+        workspaceId: params.workspaceId,
+        expiresAt: params.expiresAt
+      }
+    });
+  }
+
+  async getSession(id: string) {
+    return prisma.session.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        workspace: true
+      }
+    });
   }
 } 
