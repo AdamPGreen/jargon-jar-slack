@@ -3,8 +3,10 @@ import dotenv from 'dotenv';
 import { DatabaseService } from './services/db';
 import webApp from './app';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables from .env file in development only
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
 // Initialize services
 const db = new DatabaseService();
