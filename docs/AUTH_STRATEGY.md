@@ -77,10 +77,14 @@ model Session {
   - 24-hour expiration
   - Same-site protection
   - Session secret configured
-- [x] Implement session storage in database
-- [ ] Test session persistence
+- [x] Basic session tracking in database via Prisma
+- [x] Known Limitation: Using MemoryStore for MVP
+  - Acceptable for current scale and MVP requirements
+  - Session data is minimal (userId, workspaceId)
+  - 24-hour expiration limits memory impact
+  - Will revisit if web dashboard usage increases significantly
 
-### 6. ⏳ Frontend Authentication Flow (Not Started)
+### 6. ⏳ Frontend Authentication Flow (Next Priority)
 **Owner**: Development
 - [ ] Create Login page with Slack button
 - [ ] Add authentication context/provider
