@@ -1,82 +1,75 @@
 import {
   Box,
-  Container,
+  Button,
   Flex,
-  Heading,
-  IconButton,
-  Link,
-  Stack,
-  useDisclosure,
+  HStack,
+  Avatar,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  Text,
+  useColorModeValue,
 } from '@chakra-ui/react'
-import { Link as RouterLink, useLocation } from 'react-router-dom'
-import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons'
+import { useAuth } from '../../context/AuthContext'
 
 export default function Header() {
-  const { isOpen, onToggle } = useDisclosure()
-  const location = useLocation()
+  const { user, logout } = useAuth()
+  const bgColor = useColorModeValue('white', 'gray.800')
+  const borderColor = useColorModeValue('gray.200', 'gray.700')
 
-  const NavLink = ({ to, children }: { to: string; children: React.ReactNode }) => (
-    <Link
-      as={RouterLink}
-      to={to}
-      px={2}
-      py={1}
-      rounded="md"
-      _hover={{ bg: 'gray.100' }}
-      bg={location.pathname === to ? 'gray.100' : 'transparent'}
-      fontWeight="medium"
-    >
-      {children}
-    </Link>
-  )
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch (error) {
+      console.error('Failed to logout:', error)
+    }
+  }
 
   return (
-    <Box bg="white" boxShadow="sm">
-      <Container maxW="container.xl" px={4}>
-        <Flex h={16} alignItems="center" justifyContent="space-between">
-          <Heading
-            fontSize="xl"
-            fontFamily="Druk Wide"
-            color="brand.orange"
-            cursor="pointer"
-            as={RouterLink}
-            to="/"
-          >
-            Jargon Jar
-          </Heading>
-
-          {/* Mobile menu button */}
-          <IconButton
-            display={{ base: 'flex', md: 'none' }}
-            onClick={onToggle}
-            icon={isOpen ? <CloseIcon w={3} h={3} /> : <HamburgerIcon w={5} h={5} />}
-            variant="ghost"
-            aria-label="Toggle Navigation"
-          />
-
-          {/* Desktop nav */}
-          <Stack
-            direction="row"
-            spacing={4}
-            display={{ base: 'none', md: 'flex' }}
-          >
-            <NavLink to="/">Dashboard</NavLink>
-            <NavLink to="/profile">Profile</NavLink>
-          </Stack>
-        </Flex>
-
-        {/* Mobile nav */}
-        <Stack
-          display={{ base: isOpen ? 'flex' : 'none', md: 'none' }}
-          p={4}
-          mt={2}
-          bg="white"
-          spacing={4}
+    <Box
+      as="header"
+      bg={bgColor}
+      borderBottom="1px"
+      borderColor={borderColor}
+      py={4}
+      px={8}
+    >
+      <Flex justify="space-between" align="center" maxW="7xl" mx="auto">
+        <Text
+          fontSize="2xl"
+          fontWeight="bold"
+          fontFamily="'Druk Wide Bold', sans-serif"
         >
-          <NavLink to="/">Dashboard</NavLink>
-          <NavLink to="/profile">Profile</NavLink>
-        </Stack>
-      </Container>
+          Jargon Jar
+        </Text>
+
+        <HStack spacing={4}>
+          {user && (
+            <Menu>
+              <MenuButton
+                as={Button}
+                variant="ghost"
+                rounded="full"
+                px={2}
+                py={1}
+              >
+                <HStack spacing={2}>
+                  <Avatar
+                    size="sm"
+                    src={user.avatarUrl}
+                    name={user.name}
+                  />
+                  <Text>{user.name}</Text>
+                </HStack>
+              </MenuButton>
+              <MenuList>
+                <MenuItem onClick={handleLogout}>Sign Out</MenuItem>
+              </MenuList>
+            </Menu>
+          )}
+        </HStack>
+      </Flex>
     </Box>
   )
 } 
