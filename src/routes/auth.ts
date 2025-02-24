@@ -51,19 +51,17 @@ router.get('/slack/callback', async (req: Request, res: Response): Promise<void>
     const slackUser = await slack.getUserInfo(oauthResponse.authed_user.id);
     
     // Get or create workspace
-    const workspace = await db.getOrCreateWorkspace({
-      id: oauthResponse.team.id,
-      name: oauthResponse.team.name
-    });
+    const workspace = await db.getOrCreateWorkspace(
+      oauthResponse.team.id,
+      oauthResponse.team.name
+    );
 
     // Get or create user
-    const user = await db.getOrCreateUser({
-      id: oauthResponse.authed_user.id,
-      workspaceId: workspace.id,
-      name: slackUser.real_name || slackUser.name || 'Unknown',
-      email: slackUser.profile?.email || null,
-      avatarUrl: slackUser.profile?.image_192 || null
-    });
+    const user = await db.getOrCreateUser(
+      workspace.id,
+      oauthResponse.authed_user.id,
+      slackUser.real_name || slackUser.name || 'Unknown'
+    );
 
     // Create session
     const expiresAt = new Date();
