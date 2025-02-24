@@ -43,17 +43,20 @@ The Minimum Viable Product (MVP) for Jargon Jar will focus on delivering the cor
 ### 5. Simple Web Dashboard
 - React-based SPA with TypeScript
 - Authentication:
-  - Slack OAuth integration
-  - Secure session management
+  - ✅ Slack OAuth configuration
+  - ✅ Database schema for sessions
+  - ✅ Basic auth routes implemented
+  - 🔄 Session management (in progress)
+  - ⏳ Frontend auth flow
 - Core views:
-  - Workspace leaderboard with real-time updates
-  - Personal statistics with charts
-  - Word list with management features
+  - ⏳ Workspace leaderboard with real-time updates
+  - ⏳ Personal statistics with charts
+  - ⏳ Word list with management features
 - Basic features:
-  - Responsive design
-  - Real-time updates via WebSocket
-  - Interactive charts for statistics
-  - Basic caching for performance
+  - ⏳ Responsive design
+  - ⏳ Real-time updates via WebSocket
+  - ⏳ Interactive charts for statistics
+  - ⏳ Basic caching for performance
 
 ## Technical MVP Scope
 
@@ -124,37 +127,33 @@ After MVP launch and validation, priority additions would be:
    - ✅ Brand fonts and theme
 
 2. **Core App Shell**
-   - Create basic App.tsx with minimal structure
-   - Add Chakra Provider
-   - Test that theme and fonts are working
-   - Commit this foundation
+   - ⏳ Create basic App.tsx with minimal structure
+   - ⏳ Add Chakra Provider
+   - ⏳ Test that theme and fonts are working
 
 3. **Basic Routing**
-   - Install React Router
-   - Set up basic routes for:
+   - ⏳ Install React Router
+   - ⏳ Set up basic routes for:
      - Dashboard (main view)
      - Profile
-   - Test navigation works
-   - Commit routing setup
+   - ⏳ Test navigation works
 
 4. **Layout Foundation**
-   - Create basic layout component
-   - Add header with navigation
-   - Test responsive behavior
-   - Commit layout structure
+   - ⏳ Create basic layout component
+   - ⏳ Add header with navigation
+   - ⏳ Test responsive behavior
 
 ### Phase 2: Authentication
 1. **Slack OAuth Setup**
-   - Add login route
-   - Create OAuth redirect handler
-   - Test auth flow
-   - Commit auth foundation
+   - ✅ Add login route
+   - ✅ Create OAuth redirect handler
+   - ✅ Test auth flow
+   - 🔄 Fix type issues
 
 2. **Protected Routes**
-   - Add auth check
-   - Create loading states
-   - Handle unauthorized access
-   - Commit auth protection
+   - ✅ Add auth check middleware
+   - 🔄 Create session management
+   - ⏳ Handle unauthorized access
 
 ### Phase 3: Core Features
 1. **Dashboard View**

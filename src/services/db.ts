@@ -1,7 +1,31 @@
 import { PrismaClient, Prisma } from '@prisma/client';
+import type { Charge, Word } from '@prisma/client';
 import { defaultJargonWords } from '../data/default-jargon';
 
 const prisma = new PrismaClient();
+
+interface CreateSessionParams {
+  userId: string;
+  workspaceId: string;
+  expiresAt: Date;
+}
+
+interface ChargeResult {
+  success: true;
+  charge: Charge;
+  word: {
+    id: string;
+    word: string;
+    price: number;
+  };
+}
+
+interface ChargeError {
+  success: false;
+  error: string;
+}
+
+type ChargeResponse = ChargeResult | ChargeError;
 
 export class DatabaseService {
   // Add a new jargon word to a workspace
@@ -25,10 +49,7 @@ export class DatabaseService {
   }
 
   // Create a charge for using jargon
-  async createCharge(workspaceId: string, userId: string, reporterId: string, word: string): Promise<
-    | { success: true; charge: any; word: { word: string; price: number; id: string } }
-    | { success: false; error: string }
-  > {
+  async createCharge(workspaceId: string, userId: string, reporterId: string, word: string): Promise<ChargeResponse> {
     try {
       // Find the word and get its price
       const jargonWord = await prisma.word.findUnique({
@@ -319,5 +340,25 @@ export class DatabaseService {
         trackedWords: words.length
       }
     };
+  }
+
+  async createSession(params: CreateSessionParams) {
+    return prisma.session.create({
+      data: {
+        userId: params.userId,
+        workspaceId: params.workspaceId,
+        expiresAt: params.expiresAt
+      }
+    });
+  }
+
+  async getSession(id: string) {
+    return prisma.session.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        workspace: true
+      }
+    });
   }
 } 
