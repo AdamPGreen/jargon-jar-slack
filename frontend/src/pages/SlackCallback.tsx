@@ -1,39 +1,41 @@
 import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Box, Container, Spinner, Text, VStack } from '@chakra-ui/react';
 import { authApi } from '../api/auth';
 
 export default function SlackCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const code = searchParams.get('code');
     const error = searchParams.get('error');
+    const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
 
     if (error) {
       console.error('Slack OAuth error:', error);
-      navigate('/login', { replace: true });
+      navigate('/login', { state: { from }, replace: true });
       return;
     }
 
     if (!code) {
-      navigate('/login', { replace: true });
+      navigate('/login', { state: { from }, replace: true });
       return;
     }
 
     const handleCallback = async () => {
       try {
         await authApi.handleSlackCallback(code);
-        navigate('/', { replace: true });
+        navigate(from, { replace: true });
       } catch (error) {
         console.error('Failed to handle Slack callback:', error);
-        navigate('/login', { replace: true });
+        navigate('/login', { state: { from }, replace: true });
       }
     };
 
     handleCallback();
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, location]);
 
   return (
     <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">

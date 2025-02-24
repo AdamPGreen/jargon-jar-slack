@@ -5,13 +5,18 @@ import Dashboard from './pages/Dashboard'
 import Profile from './pages/Profile'
 import Login from './pages/Login'
 import SlackCallback from './pages/SlackCallback'
+import ProtectedRoute from './components/auth/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
 import theme from './theme'
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <AppLayout />,
+    element: (
+      <ProtectedRoute>
+        <AppLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,

@@ -1,19 +1,30 @@
-import { Box, Button, Container, Heading, Text, VStack, useColorModeValue } from '@chakra-ui/react';
+import { Box, Button, Container, Heading, Text, VStack, useColorModeValue, Spinner } from '@chakra-ui/react';
 import { FaSlack } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 
 export default function Login() {
   const { login, isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
   const bgColor = useColorModeValue('gray.50', 'gray.900');
-  const buttonHoverBg = useColorModeValue('green.600', 'green.500');
+
+  // Get the redirect path from location state, default to '/'
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
 
   if (isLoading) {
-    return null; // Or a loading spinner
+    return (
+      <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
+        <Container maxW="lg">
+          <VStack spacing={4}>
+            <Spinner size="xl" color="green.500" thickness="4px" />
+          </VStack>
+        </Container>
+      </Box>
+    );
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={from} replace />;
   }
 
   return (
