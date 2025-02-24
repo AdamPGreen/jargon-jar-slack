@@ -127,6 +127,25 @@ After MVP launch and validation, priority additions would be:
    - ✅ Brand fonts and theme
 
 2. **Core App Shell**
+   - ✅ Create basic App.tsx with minimal structure
+   - ✅ Add Chakra Provider
+   - ✅ Test that theme and fonts are working
+   - ✅ Commit this foundation
+
+3. **Basic Routing**
+   - ✅ Install React Router
+   - ✅ Set up basic routes for:
+     - ✅ Dashboard (main view)
+     - ✅ Profile
+   - ✅ Test navigation works
+   - ✅ Commit routing setup
+
+4. **Layout Foundation**
+   - ✅ Create basic layout component
+   - ✅ Add header with navigation
+   - ✅ Test responsive behavior
+   - ✅ Commit layout structure
+=======
    - ⏳ Create basic App.tsx with minimal structure
    - ⏳ Add Chakra Provider
    - ⏳ Test that theme and fonts are working
@@ -142,6 +161,7 @@ After MVP launch and validation, priority additions would be:
    - ⏳ Create basic layout component
    - ⏳ Add header with navigation
    - ⏳ Test responsive behavior
+
 
 ### Phase 2: Authentication
 1. **Slack OAuth Setup**
