@@ -3,6 +3,12 @@ import { defaultJargonWords } from '../data/default-jargon';
 
 const prisma = new PrismaClient();
 
+interface CreateSessionParams {
+  userId: string;
+  workspaceId: string;
+  expiresAt: Date;
+}
+
 export class DatabaseService {
   // Add a new jargon word to a workspace
   async addWord(workspaceId: string, word: string, price: number) {
@@ -319,5 +325,25 @@ export class DatabaseService {
         trackedWords: words.length
       }
     };
+  }
+
+  async createSession(params: CreateSessionParams) {
+    return prisma.session.create({
+      data: {
+        userId: params.userId,
+        workspaceId: params.workspaceId,
+        expiresAt: params.expiresAt
+      }
+    });
+  }
+
+  async getSession(id: string) {
+    return prisma.session.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        workspace: true
+      }
+    });
   }
 } 
