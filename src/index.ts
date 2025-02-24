@@ -1,6 +1,7 @@
 import { App } from '@slack/bolt';
 import dotenv from 'dotenv';
 import { DatabaseService } from './services/db';
+import webApp from './app';
 
 // Load environment variables
 dotenv.config();
@@ -340,13 +341,15 @@ Times Caught: ${stats.chargeCount}${mostUsedSection}`
   }
 });
 
-// Start the app
+// Start both apps
 (async () => {
-  try {
-    await app.start(process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 3000);
-    console.log('⚡️ Jargon Jar app is running!');
-  } catch (error) {
-    console.error('Error starting app:', error);
-    process.exit(1);
-  }
+  // Start the Slack app
+  await app.start();
+  console.log('⚡️ Slack bot is running!');
+
+  // Start the web server
+  const PORT = process.env.PORT || 3000;
+  webApp.listen(PORT, () => {
+    console.log(`🚀 Web server running on port ${PORT}`);
+  });
 })(); 
